@@ -7,10 +7,10 @@ canvas.height = 700;
 let spacePressed = false;
 let gameFrame = 0; //frame count do animnation loop.
 // let score = 0;
-let gameSpeed = 3; // para criar o parallax effect
+let gameSpeed = 4; // para criar o parallax effect
 const obstaclesArray = [];
 let gravity = 1;
-const groundHeight = 136;
+const groundHeight = 131;
 
 // FLOOR
 const floorImage = new Image();
@@ -22,7 +22,7 @@ bgImage.src = "./images/background.png";
 
 // FROG
 const frogSprite = new Image();
-frogSprite.src = "./images/frog-run.png";
+frogSprite.src = "./images/frog-sheet.png";
 
 class Scenario {
   constructor(x1, x2, y, width, height, speedRate, sprite) {
@@ -114,10 +114,32 @@ class Player {
     }
   
     fire() {}
-  }
+}
+class Obstacle {
+    constructor(x, y, width, height, sprite) {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+      this.sprite = sprite;
+  
+      // this.speedX -=gameSpeed;
+    }
+    update() {
+      // this.x += this.speedX;
+      this.draw();
+      this.x -= gameSpeed;
+    }
+  
+    draw() {
+      ctx.fillStyle = "green";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
 
+const frog = new Player();
 const floor = new Scenario(0, canvas.width, 0, canvas.width, canvas.height, 1, floorImage);
-const bg = new Scenario(0, canvas.width, 0, canvas.width, canvas.height, 0.1, bgImage);
+const bg = new Scenario(0, canvas.width, 0, canvas.width, canvas.height, 0.5, bgImage);
 
 function buildScenario() {
     
@@ -127,14 +149,79 @@ function buildScenario() {
     floor.draw();
 }
 
+function buildObstacles() {
+    const newObstacle = new Obstacle(
+      canvas.width,
+      canvas.height - 84 - groundHeight,
+      84,
+      84
+    );
+    if (gameFrame % 500 === 0) {
+      // ciclo de cem frames
+      // obstaclesArray.unshift(new Obstacle(canvas.width, canvas.height - 84 - groundHeight, 84, 84));
+      obstaclesArray.unshift(newObstacle);
+    }
+    for (let i = 0; i < obstaclesArray.length; i++) {
+      obstaclesArray[i].update();
+    }
+    if (obstaclesArray.length > 20) {
+      obstaclesArray.pop(obstaclesArray[0]);
+    }
+}
+
+function calculateCollisions() {
+    for (let i = 0; i < obstaclesArray.length; i++) {
+      let obstacle = obstaclesArray[i];
+  
+      // if(obstacle.x + obstacle.width < 0) {
+      //   obstaclesArray.splice(i, 1);
+      // }
+  
+      if (
+        frog.x < obstacle.x + obstacle.width &&
+        frog.x + frog.width > obstacle.x &&
+        frog.y < obstacle.y + obstacle.height &&
+        frog.y + frog.height > obstacle.y
+      ) {
+        gameOver();
+        return true;
+      }
+    }
+}
+
+function gameOver() {
+    console.log("game over");
+}
+
+function randomNumber(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
+}
+
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   buildScenario();
-//   ctx.fillRect(frame, 20, 20, 20)
-  
+  buildObstacles();
 
-  frame++;
+  frog.update();
+  frog.draw();
+  if (spacePressed) {
+    frog.jump();
+  }
+
+  calculateCollisions();
   requestAnimationFrame(animate);
+  gameFrame++;
 }
 
 animate();
+
+window.addEventListener("keydown", function (event) {
+    if (event.code === "Space") {
+      spacePressed = true;
+    }
+  });
+  window.addEventListener("keyup", function (event) {
+    if (event.code === "Space") {
+      spacePressed = false;
+    }
+  });
