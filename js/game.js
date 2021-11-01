@@ -6,7 +6,7 @@ canvas.height = 600;
 // VARIABLES
 let spacePressed = false;
 let gameFrame = 0; //frame count do animnation loop.
-let initialScore = 0;
+let currentScore = 0;
 let score = 0;
 let highscore = 0;
 let gameSpeed = 5; // para criar o parallax effect
@@ -37,9 +37,6 @@ chickenSprite.src = "./images/chicken-run.png";
 // SAW
 const sawSprite = new Image();
 sawSprite.src = "./images/saw.png";
-
-
-
 
 class Scenario {
   constructor(x1, x2, y, width, height, speedRate, sprite) {
@@ -88,6 +85,7 @@ class Player {
       this.frameX = 1;
       this.frameY = 0;
       this.spritePace = 3;
+      this.dying = false;
     }
   
     update() {
@@ -103,15 +101,14 @@ class Player {
     }
   
     draw() {
-      if(this.grounded){
-        this.frameY = 0;
+      if(this.dying) {
+        this.frameY = 3;
       } else if (!this.grounded){
         this.frameY = 1;
-      } else if (this.dying){
-        this.frameY = 2;
+      } else if (this.grounded){
+        this.frameY = 0;
       }
   
-      ctx.fillStyle = "black";
   
       ctx.drawImage(frogSprite, this.spriteWidth * this.frameX, this.spriteHeight * this.frameY, this.spriteWidth, this.spriteHeight, this.x, this.y, this.spriteWidth, this.spriteHeight);
       if(gameFrame % this.spritePace === 0) {
@@ -183,23 +180,15 @@ function buildEnemies() {
     const newObstacle = new Enemy(canvas.width, canvas.height - 72  - groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1);
     const newChicken = new Enemy(canvas.width, canvas.height - 68 - groundHeight, 64, 68, 32, 34, chickenSprite, 13, 4, 2);
     const newSaw = new Enemy(canvas.width + 150, canvas.height - randomIntNumber(200, 400) - groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3);
-    // if (gameFrame % 300 === 0) {
-    //   // ciclo de cem frames
-    //   // obstaclesArray.unshift(new Obstacle(canvas.width, canvas.height - 84 - groundHeight, 84, 84));
-    //   obstaclesArray.unshift(newObstacle);
-    //   obstaclesArray.unshift(newChicken);
-    //   obstaclesArray.unshift(newChicken);
-    //   obstaclesArray.unshift(newSaw);
-    // }
-    let chickenChance = 5;
-    let obstacleChance = 2;
-    let sawChance = 3;
+
+    let chickenChance = 10;
+    let sawChance = 4;
 
     const chance = Math.random() * 1000;
     if(chance < chickenChance) {
         obstaclesArray.unshift(newChicken);
     }
-    if(gameFrame % 200 === 0) {
+    if(gameFrame % 100 === 0) {
         obstaclesArray.unshift(newObstacle);
     }
     if(chance < sawChance) {
@@ -214,45 +203,22 @@ function buildEnemies() {
       obstaclesArray.pop(obstaclesArray[0]);
     }
 
-    // for (let i = 0; i < obstaclesArray.length; i++) {
-    //     let obstacle = obstaclesArray[i];
-  
-    //     if(obstacle.x + obstacle.width < 0) {
-    //       obstaclesArray.splice(i, 1)
-    //     }
-      
-    //     obstacle.update();
-          
-    //   }
 }
 function drawScore() {
-    ctx.font = "40px Teko";
-    ctx.fillStyle = "black";
-    ctx.fillText(`Score ${initialScore} / ${highscore}`, 15, 40);
+    ctx.font = "20px IBM Plex Mono";
+    ctx.fillStyle = "#1E1E1E";
+    ctx.fillText(`Score ${currentScore} / ${highscore}`, 15, 40);
+    currentScore++
 }
-
-function increaseScore() {
-    initialScore++;
-}
-
-setInterval(increaseScore, 500)
 
 function calculateCollisions() {
     for (let i = 0; i < obstaclesArray.length; i++) {
       let obstacle = obstaclesArray[i];
-  
-      // if(obstacle.x + obstacle.width < 0) {
-      //   obstaclesArray.splice(i, 1);
-      // }
-  
-      if (frog.x < obstacle.x + obstacle.width &&
+
+        if (frog.x < obstacle.x + obstacle.width &&
         frog.x + frog.width > obstacle.x &&
         frog.y < obstacle.y + obstacle.height &&
         frog.y + frog.height > obstacle.y) {
-            if(initialScore < highscore) {
-                highscore = initialScore;
-            }
-        initialScore = 0;
         gameOver();
         return true;
       }
@@ -260,6 +226,12 @@ function calculateCollisions() {
 }
 
 function gameOver() {
+    if(currentScore > highscore) {
+        highscore = currentScore;
+    }
+    currentScore = 0;
+    // frog.dying = true; // Para mudar o sprite
+
     console.log("game over");
 }
 
@@ -276,10 +248,21 @@ function animate() {
   if (spacePressed) {
     frog.jump();
   }
-  calculateCollisions();
+//   if (currentScore > 200) {
+    //   gameSpeed = 7
+//   } else if(currentScore > 500) {
+//       gameSpeed = 9
+//   } else {
+//       gameSpeed = 4
+//   }  
+  if(calculateCollisions()) {
+      frog.dying = true;
+  } else {
+      frog.dying = false;
+  }
   drawScore();
-  requestAnimationFrame(animate);
   gameFrame++;
+  requestAnimationFrame(animate); // looping
 }
 
 animate();
