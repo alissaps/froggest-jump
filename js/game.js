@@ -4,7 +4,7 @@ canvas.width = 1000;
 canvas.height = 600;
 
 // VARIABLES
-let spacePressed = false;
+// let spacePressed = false;
 let gameFrame = 0; //frame count do animnation loop.
 let currentScore = 0;
 let score = 0;
@@ -13,6 +13,7 @@ let gameSpeed = 5; // para criar o parallax effect
 const obstaclesArray = [];
 let gravity = 1;
 const groundHeight = 112;
+let jumpCount = 2;
 
 // FLOOR
 const floorImage = new Image();
@@ -51,7 +52,7 @@ class Scenario {
 
   update() {
     if (this.x1 <= -this.width + gameSpeed * this.speedRate) {
-      this.x1 = this.width; // se chegar na ponta esquerda, move para a direita
+      this.x1 = this.width; // Quando chegar na ponta esquerda, move para a direita
     } else {
       this.x1 -= gameSpeed * this.speedRate;
     }
@@ -90,6 +91,8 @@ class Player {
   
     update() {
       this.y += this.speedY;
+
+      // GRAVITY
       if (this.y + this.height < canvas.height - groundHeight) {
         this.speedY += gravity;
         this.grounded = false;
@@ -100,7 +103,7 @@ class Player {
       }
     }
   
-    draw() {
+    draw() { // Selecionando o Sprite verticalmente
       if(this.dying) {
         this.frameY = 3;
       } else if (!this.grounded){
@@ -121,9 +124,9 @@ class Player {
     }
   
     jump() {
-      if (this.grounded) {
-        this.speedY -= 25;
-      }
+        this.speedY = -20;  
+        // this.speedY -= 20;
+        this.speedY = constrain(this.speedY, -20, 0); // Limitar a velocidade do salto
     }
   
     fire() {}
@@ -143,10 +146,8 @@ class Enemy {
       this.spritePace = spritePace;
       this.speedMultiplier = speedMultiplier;
   
-      // this.speedX -=gameSpeed;
     }
     update() {
-      // this.x += this.speedX;
       this.draw();
       this.x -= gameSpeed * this.speedMultiplier;
     }
@@ -175,6 +176,12 @@ function buildScenario() {
     bg.draw();
     floor.draw();
 }
+
+function randomIntNumber(min, max) {
+    // return Math.round(Math.random() * (max - min) + min);
+    // return Math.floor(Math.random() * 3) + 1
+    return Math.round(Math.random() * (max - min + 1)) + min
+}
 // x, y, width, height, spriteWidth, spriteHeight, image, spriteNumber, spritePace
 function buildEnemies() {
     const newObstacle = new Enemy(canvas.width, canvas.height - 72  - groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1);
@@ -195,7 +202,6 @@ function buildEnemies() {
         obstaclesArray.unshift(newSaw);
     }
 
-
     for (let i = 0; i < obstaclesArray.length; i++) {
       obstaclesArray[i].update();
     }
@@ -204,11 +210,17 @@ function buildEnemies() {
     }
 
 }
+
 function drawScore() {
     ctx.font = "20px IBM Plex Mono";
     ctx.fillStyle = "#1E1E1E";
     ctx.fillText(`Score ${currentScore} / ${highscore}`, 15, 40);
     currentScore++
+}
+function debug() {
+    ctx.font = "20px IBM Plex Mono";
+    ctx.fillStyle = "red";
+    ctx.fillText(`Speed Y: ${frog.speedY}`, 300, 40);
 }
 
 function calculateCollisions() {
@@ -230,24 +242,27 @@ function gameOver() {
         highscore = currentScore;
     }
     currentScore = 0;
-    // frog.dying = true; // Para mudar o sprite
 
     console.log("game over");
 }
 
-function randomIntNumber(min, max) {
-    return Math.round(Math.random() * (max - min) + min);
-}
+
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   buildScenario();
   buildEnemies();
+  if(frog.grounded) {
+      jumpCount = 1;
+  }
   frog.update();
   frog.draw();
-  if (spacePressed) {
-    frog.jump();
-  }
+//   if (spacePressed) {
+//       if(jumpCount > 0 && jumpCount <= 2) {
+//         frog.jump();
+//         jumpCount--;
+//       }
+//   }
 //   if (currentScore > 200) {
     //   gameSpeed = 7
 //   } else if(currentScore > 500) {
@@ -261,6 +276,7 @@ function animate() {
       frog.dying = false;
   }
   drawScore();
+  debug()
   gameFrame++;
   requestAnimationFrame(animate); // looping
 }
@@ -268,12 +284,23 @@ function animate() {
 animate();
 
 window.addEventListener("keydown", function (event) {
+    console.log('keydown')
     if (event.code === "Space") {
-      spacePressed = true;
+    //   spacePressed = true;
+      if(jumpCount > 0 && jumpCount < 2) {
+        frog.jump();
+        jumpCount--;
+      }
     }
   });
-  window.addEventListener("keyup", function (event) {
-    if (event.code === "Space") {
-      spacePressed = false;
-    }
-  });
+
+//   window.addEventListener("keyup", function (event) {
+//     if (event.code === "Space") {
+//     //   spacePressed = false;
+//     }
+//   });
+
+//============================
+function constrain (n, low, high) {
+    return Math.max(Math.min(n, high), low);
+};
