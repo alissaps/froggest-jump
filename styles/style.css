@@ -1,7 +1,23 @@
 #canvas {
-    border: 1px solid black;
+    /* border: 1px solid black; */
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    /* display: none; */
+
+}
+
+body {
+    background-color: #D1A9BF;
+}
+
+#start {
+    border: 1px red solid;
+    background: url("./assets/images/start-01.png");
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
 }

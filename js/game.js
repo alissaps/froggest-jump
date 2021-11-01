@@ -1,7 +1,58 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
 canvas.width = 1000;
 canvas.height = 600;
+
+////// IMAGES ///////
+// START PAGE
+const startPage = new Image();
+startPage.src = "./assets/images/start.png";
+
+//GAME OVER PAGE
+const gameOverImg = new Image();
+gameOverImg.src = "./assets/images/gameover.png";
+
+// FLOOR
+const floorImage = new Image();
+floorImage.src = "./assets/images/floor.png";
+
+// BACKGROUND
+const bgImage = new Image();
+bgImage.src = "./assets/images/background.png";
+
+// FROG
+const frogSprite = new Image();
+frogSprite.src = "./assets/images/frog-sheet.png";
+
+// OBSTACLE
+const obstacleSprite = new Image();
+obstacleSprite.src = "./assets/images/rock-head.png";
+
+//CHICKEN 
+const chickenSprite = new Image();
+chickenSprite.src = "./assets/images/chicken-run.png";
+
+// SAW
+const sawSprite = new Image();
+sawSprite.src = "./assets/images/saw.png";
+
+////// SOUNDS ///////
+const gameSound = new Audio();
+gameSound.src = "./assets/sounds/background-song.ogg";
+gameSound.volume = 0.6;
+
+const jumpSound = new Audio();
+jumpSound.src = "./assets/sounds/jump.wav";
+jumpSound.volume = 0.6;
+
+const chickenSound = new Audio();
+chickenSound.src = "./assets/sounds/chicken-sound.mp3";
+chickenSound.volume = 0.5;
+
+const loseSound = new Audio();
+loseSound.src = "./assets/sounds/lose-sound.ogg";
+
 
 // VARIABLES
 // let spacePressed = false;
@@ -14,30 +65,6 @@ const obstaclesArray = [];
 let gravity = 1;
 const groundHeight = 112;
 let jumpCount = 2;
-
-// FLOOR
-const floorImage = new Image();
-floorImage.src = "./images/floor.png";
-
-// BACKGROUND
-const bgImage = new Image();
-bgImage.src = "./images/background.png";
-
-// FROG
-const frogSprite = new Image();
-frogSprite.src = "./images/frog-sheet.png";
-
-// OBSTACLE
-const obstacleSprite = new Image();
-obstacleSprite.src = "./images/rock-head.png";
-
-//CHICKEN 
-const chickenSprite = new Image();
-chickenSprite.src = "./images/chicken-run.png";
-
-// SAW
-const sawSprite = new Image();
-sawSprite.src = "./images/saw.png";
 
 class Scenario {
   constructor(x1, x2, y, width, height, speedRate, sprite) {
@@ -177,25 +204,33 @@ function buildScenario() {
     floor.draw();
 }
 
-function randomIntNumber(min, max) {
-    // return Math.round(Math.random() * (max - min) + min);
+function randomSaw(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
     // return Math.floor(Math.random() * 3) + 1
-    return Math.round(Math.random() * (max - min + 1)) + min
+    // return Math.round(Math.random() * (max - min + 1)) + min;
+    // return Math.floor(Math.random()*4);  
+}
+
+function randomSpawn(min, max) {
+    return Math.round(Math.random() * (max - min + 1)) + min;
 }
 // x, y, width, height, spriteWidth, spriteHeight, image, spriteNumber, spritePace
 function buildEnemies() {
     const newObstacle = new Enemy(canvas.width, canvas.height - 72  - groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1);
     const newChicken = new Enemy(canvas.width, canvas.height - 68 - groundHeight, 64, 68, 32, 34, chickenSprite, 13, 4, 2);
-    const newSaw = new Enemy(canvas.width + 150, canvas.height - randomIntNumber(200, 400) - groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3);
+    const newSaw = new Enemy(canvas.width + 150, canvas.height - randomSaw(240, 400) - groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3);
 
     let chickenChance = 10;
-    let sawChance = 4;
+    let sawChance = 5;
 
     const chance = Math.random() * 1000;
-    if(chance < chickenChance) {
+    const chance2 = randomSpawn(200, 300);
+
+    if(gameFrame % chance2 === 0) {
         obstaclesArray.unshift(newChicken);
+        chickenSound.play();
     }
-    if(gameFrame % 100 === 0) {
+    if(gameFrame % 200 === 0) {
         obstaclesArray.unshift(newObstacle);
     }
     if(chance < sawChance) {
@@ -246,30 +281,17 @@ function gameOver() {
     console.log("game over");
 }
 
-
-
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   buildScenario();
   buildEnemies();
+//   gameSound.play();
   if(frog.grounded) {
       jumpCount = 1;
   }
   frog.update();
   frog.draw();
-//   if (spacePressed) {
-//       if(jumpCount > 0 && jumpCount <= 2) {
-//         frog.jump();
-//         jumpCount--;
-//       }
-//   }
-//   if (currentScore > 200) {
-    //   gameSpeed = 7
-//   } else if(currentScore > 500) {
-//       gameSpeed = 9
-//   } else {
-//       gameSpeed = 4
-//   }  
+
   if(calculateCollisions()) {
       frog.dying = true;
   } else {
@@ -281,6 +303,7 @@ function animate() {
   requestAnimationFrame(animate); // looping
 }
 
+
 animate();
 
 window.addEventListener("keydown", function (event) {
@@ -290,17 +313,11 @@ window.addEventListener("keydown", function (event) {
       if(jumpCount > 0 && jumpCount < 2) {
         frog.jump();
         jumpCount--;
+        jumpSound.play()
       }
     }
   });
 
-//   window.addEventListener("keyup", function (event) {
-//     if (event.code === "Space") {
-//     //   spacePressed = false;
-//     }
-//   });
-
-//============================
 function constrain (n, low, high) {
     return Math.max(Math.min(n, high), low);
 };
