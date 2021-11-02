@@ -12,9 +12,6 @@ body {
 }
 
 #start {
-    /* display: none; */
-    /* border: 1px black solid; */
-    /* border: 1px 1px 0 1px solid black; */
     position: absolute;
     top: 50%;
     left: 50%;
@@ -23,8 +20,6 @@ body {
 }
 
 #game-over {
-    /* display: none; */
-    /* border: 1px 1px 1px 1px solid black; */
     position: absolute;
     top: 50%;
     left: 50%;
@@ -35,3 +30,32 @@ body {
 .hidden {
     display: none;
 }
+
+.start-btn {
+    background: #ffc124;
+}
+
+.start-btn:hover {
+    background: #dda415;
+}
+
+.over-btn {
+    background: #f3acab;
+}
+.over-btn:hover {
+    background: #bb807f;
+}
+
+.btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    padding: 10px;
+    transform: translate(-50%, -140%);
+    font-size: 35px;
+    font-family: "IBM Plex Mono";
+    border-radius: 20px;
+    box-shadow: 6px 9px 3px -3px rgb(45, 44, 44);
+}
+
