@@ -37,7 +37,7 @@ sawSprite.src = "./assets/images/saw.png";
 
 // BULLET
 const bulletImg = new Image();
-bulletImg.src = "./assets/images/bullet.png";
+bulletImg.src = "./assets/images/block.png";
 
 ////// SOUNDS ///////
 const gameSound = new Audio();
@@ -107,6 +107,7 @@ class Player {
       this.frameY = 0;
       this.spritePace = 3;
       this.dying = false;
+      this.firing = false;
       this.game = game;
     }
   
@@ -128,6 +129,8 @@ class Player {
       
       if(this.dying) {
         this.frameY = 3;
+    } else if(this.firing) {
+        this.frameY = 2;
       } else if (!this.grounded){
         this.frameY = 1;
       } else if (this.grounded){
@@ -152,8 +155,9 @@ class Player {
   
     fire() { 
         const newBullet = new Bullet(this.x, this.y, 30, 30, bulletImg, 5, this.game);
-        if(this.game.bulletsArray.length < 5) {
+        if(this.game.bulletsArray.length < 3) {
             this.game.bulletsArray.unshift(newBullet);
+                return true;
         }
         
     }
@@ -173,7 +177,8 @@ class Enemy {
       this.spriteNumber = spriteNumber;
       this.spritePace = spritePace;
       this.speedMultiplier = speedMultiplier;
-      this.game = game; 
+      this.game = game;
+      this.kind = kind;
   
     }
     update() {
@@ -210,7 +215,6 @@ class Bullet {
     }
     
       draw() {
-
       ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
       }
 }
@@ -329,7 +333,7 @@ class Game {
         }
         this.frog.update();
         this.frog.draw();
-        this.updateBullets()
+        this.updateBullets();
         // this.debug();
         this.drawScore();
         if(this.calculateCollisions()) {
@@ -340,7 +344,7 @@ class Game {
             chickenSound.currentTime = 0;
             setTimeout(() => {
                 this.gameOver()
-            }, 1000);
+            }, 700);
         } else {
             this.frog.dying = false;
         }
@@ -389,6 +393,13 @@ window.onload = () => {
             if (event.code === "KeyZ") {
                 console.log("z")
                 game.frog.fire();
+                game.frog.firing = true;
+            }
+        });
+
+        document.addEventListener("keyup", function (event) {
+            if (event.code === "KeyZ") {
+                game.frog.firing = false;
             }
         });
     }
