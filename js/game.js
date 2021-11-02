@@ -35,6 +35,10 @@ chickenSprite.src = "./assets/images/chicken-run.png";
 const sawSprite = new Image();
 sawSprite.src = "./assets/images/saw.png";
 
+// BULLET
+const bulletImg = new Image();
+bulletImg.src = "./assets/images/bullet.png";
+
 ////// SOUNDS ///////
 const gameSound = new Audio();
 gameSound.src = "./assets/sounds/background-song.ogg";
@@ -46,10 +50,11 @@ jumpSound.volume = 0.6;
 
 const chickenSound = new Audio();
 chickenSound.src = "./assets/sounds/chicken-sound.mp3";
-chickenSound.volume = 0.3;
+chickenSound.volume = 0.1;
 
 const loseSound = new Audio();
 loseSound.src = "./assets/sounds/loser.ogg";
+loseSound.volume = 0.3;
 
 
 class Scenario {
@@ -64,10 +69,10 @@ class Scenario {
     this.game = game;
 
   }
-
+   // Condição para se o bg chegar na ponta esquerda, mover para a direita
   update() {
     if (this.x1 <= -this.width + this.game.gameSpeed * this.speedRate) {
-      this.x1 = this.width; // Quando chegar na ponta esquerda, move para a direita
+      this.x1 = this.width;
     } else {
       this.x1 -= this.game.gameSpeed * this.speedRate;
     }
@@ -145,11 +150,18 @@ class Player {
         this.speedY = constrain(this.speedY, -20, 0); // Limitar a velocidade do salto
     }
   
-    fire() {}
+    fire() { 
+        const newBullet = new Bullet(this.x, this.y, 30, 30, bulletImg, 5, this.game);
+        if(this.game.bulletsArray.length < 5) {
+            this.game.bulletsArray.unshift(newBullet);
+        }
+        
+    }
+
 }
 
 class Enemy {
-    constructor(x, y, width, height, spriteWidth, spriteHeight, image, spriteNumber, spritePace, speedMultiplier, game) {
+    constructor(x, y, width, height, spriteWidth, spriteHeight, image, spriteNumber, spritePace, speedMultiplier, game, kind) {
       this.x = x;
       this.y = y;
       this.width = width;
@@ -165,20 +177,42 @@ class Enemy {
   
     }
     update() {
-      this.draw();
-      this.x -= this.game.gameSpeed * this.speedMultiplier;
+        this.x -= this.game.gameSpeed * this.speedMultiplier;
+        this.draw();
     }
   
     draw() {
-    ctx.drawImage(this.image, this.spriteWidth * this.frameX, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
-    if(this.game.gameFrame % this.spritePace === 0) {
-        if(this.frameX < this.spriteNumber - 1) {
-          this.frameX++
-        } else {
-          this.frameX = 0;
+        if(this.game.gameFrame % this.spritePace === 0) {
+            if(this.frameX < this.spriteNumber - 1) {
+                this.frameX++
+            } else {
+                this.frameX = 0;
+            }
         }
-      }
+        ctx.drawImage(this.image, this.spriteWidth * this.frameX, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
     }
+}
+
+class Bullet {
+    constructor(x, y, width, height, image, speedX, game) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.image = image;
+        this.game = game;
+        this.speedX = speedX;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.draw();
+    }
+    
+      draw() {
+
+      ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+      }
 }
 
 class Game {
@@ -189,6 +223,7 @@ class Game {
         this.highscore = 0;
         this.gameSpeed = 5; // para criar o parallax effect
         this.obstaclesArray = [];
+        this.bulletsArray = [];
         this.gravity = 1;
         this.groundHeight = 112;
         this.jumpCount = 2;
@@ -206,9 +241,9 @@ class Game {
     }
 
     buildEnemies() {
-        const newObstacle = new Enemy(canvas.width, canvas.height - 72  - this.groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1, this);
-        const newChicken = new Enemy(canvas.width, canvas.height - 68 - this.groundHeight, 64, 68, 32, 34, chickenSprite, 13, 4, 2, this);
-        const newSaw = new Enemy(canvas.width + 150, canvas.height - randomSaw(240, 400) - this.groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3, this);
+        const newObstacle = new Enemy(canvas.width, canvas.height - 72  - this.groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1, this, "obstacle");
+        const newChicken = new Enemy(canvas.width, canvas.height - 68 - this.groundHeight, 64, 68, 32, 34, chickenSprite, 13, 4, 2, this, "chicken");
+        const newSaw = new Enemy(canvas.width + 150, canvas.height - randomSaw(240, 400) - this.groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3, this, "saw");
     
         let chickenChance = 10;
         let sawChance = 5;
@@ -233,7 +268,15 @@ class Game {
         if (this.obstaclesArray.length > 30) {
           this.obstaclesArray.pop(this.obstaclesArray[0]);
         }
-    
+    }
+
+    updateBullets() {
+        for (let i = 0; i < this.bulletsArray.length; i++) {
+            this.bulletsArray[i].update();
+            if(this.bulletsArray[i].x > canvas.width){
+                this.bulletsArray.splice(i, 1);
+            }
+          }
     }
 
     drawScore() {
@@ -270,7 +313,10 @@ class Game {
     debug() {
         ctx.font = "20px IBM Plex Mono";
         ctx.fillStyle = "red";
-        ctx.fillText(`Frog- X: ${this.frog.x} Y: ${this.frog.y}`, 300, 40);
+        if(this.bulletsArray[0] !== undefined) {
+            ctx.fillText(`Bullets: ${this.bulletsArray.length} Y: ${this.frog.y}`, 300, 40);
+        }
+
     }
 
     animate = () => {
@@ -283,12 +329,15 @@ class Game {
         }
         this.frog.update();
         this.frog.draw();
-        //this.debug();
+        this.updateBullets()
+        // this.debug();
         this.drawScore();
         if(this.calculateCollisions()) {
             this.frog.dying = true;
             this.gameSpeed = 0;
             loseSound.play();
+            chickenSound.pause();
+            chickenSound.currentTime = 0;
             setTimeout(() => {
                 this.gameOver()
             }, 1000);
@@ -327,13 +376,19 @@ window.onload = () => {
         game.animate();
     
         document.addEventListener("keydown", function (event) {
-            console.log('keydown')
+
             if (event.code === "Space") {
                 if(game.jumpCount > 0 && game.jumpCount < 2) {
+                    console.log('space')
                     game.frog.jump();
                     game.jumpCount--;
                     jumpSound.play()
                 }
+            }
+
+            if (event.code === "KeyZ") {
+                console.log("z")
+                game.frog.fire();
             }
         });
     }
@@ -347,7 +402,6 @@ function randomSaw(min, max) {
     return Math.round(Math.random() * (max - min) + min);
     // return Math.floor(Math.random() * 3) + 1
     // return Math.round(Math.random() * (max - min + 1)) + min;
-    // return Math.floor(Math.random()*4);  
 }
 
 function randomSpawn(min, max) {
