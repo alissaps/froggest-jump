@@ -1,5 +1,5 @@
 #canvas {
-    /* border: 1px solid black; */
+    border: 1px solid black;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -8,12 +8,13 @@
 }
 
 body {
-    background-color: #D1A9BF;
+    background-color: #3e3e3e;
 }
 
 #start {
-    display: none;
-    border: 1px red solid;
+    /* display: none; */
+    /* border: 1px black solid; */
+    /* border: 1px 1px 0 1px solid black; */
     position: absolute;
     top: 50%;
     left: 50%;
@@ -22,9 +23,13 @@ body {
 }
 
 #game-over {
-    display: none;
-    justify-content: center;
-    align-items: center;
+    /* display: none; */
+    /* border: 1px 1px 1px 1px solid black; */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
 }
 
 .hidden {
