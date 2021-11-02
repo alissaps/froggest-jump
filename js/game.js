@@ -10,8 +10,7 @@ const startPage = new Image();
 startPage.src = "./assets/images/start.png";
 
 //GAME OVER PAGE
-const gameOverImg = new Image();
-gameOverImg.src = "./assets/images/gameover.png";
+const gameOverImg = document.getElementById("game-over");
 
 // FLOOR
 const floorImage = new Image();
@@ -52,7 +51,6 @@ chickenSound.volume = 0.5;
 
 const loseSound = new Audio();
 loseSound.src = "./assets/sounds/lose-sound.ogg";
-
 
 // VARIABLES
 // let spacePressed = false;
@@ -215,6 +213,13 @@ function randomSpawn(min, max) {
     return Math.round(Math.random() * (max - min + 1)) + min;
 }
 // x, y, width, height, spriteWidth, spriteHeight, image, spriteNumber, spritePace
+
+class Game {
+    constructor() {
+        
+    }
+}
+
 function buildEnemies() {
     const newObstacle = new Enemy(canvas.width, canvas.height - 72  - groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1);
     const newChicken = new Enemy(canvas.width, canvas.height - 68 - groundHeight, 64, 68, 32, 34, chickenSprite, 13, 4, 2);
@@ -278,7 +283,6 @@ function gameOver() {
     }
     currentScore = 0;
 
-    console.log("game over");
 }
 
 function animate() {
@@ -291,20 +295,30 @@ function animate() {
   }
   frog.update();
   frog.draw();
-
+  drawScore();
+  debug()
   if(calculateCollisions()) {
       frog.dying = true;
+      gameOverImg.style.display = "inline";
+      canvas.classList.add("hidden");
+      return
   } else {
       frog.dying = false;
   }
-  drawScore();
-  debug()
+  console.log("continuando")
   gameFrame++;
-  requestAnimationFrame(animate); // looping
+  requestAnimationFrame(animate); // Looping
 }
 
 
 animate();
+
+window.addEventListener("click", () => {
+    console.log("cliquei")
+    canvas.classList.remove("hidden")
+    animate()
+    
+})
 
 window.addEventListener("keydown", function (event) {
     console.log('keydown')
