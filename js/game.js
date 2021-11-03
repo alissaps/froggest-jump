@@ -292,7 +292,7 @@ class Game {
     for (let i = 0; i < this.bulletsArray.length; i++) {
       this.bulletsArray[i].update();
       for (let j = 0; j < this.enemiesArray.length; j++) {
-        if (this.enemiesArray[j].kind === "chicken" && this.bulletsArray[i] !== undefined) {
+        if ((this.enemiesArray[j].kind === "chicken" || this.enemiesArray[j].kind === "saw") && this.bulletsArray[i] !== undefined) {
           if (this.bulletsArray[i].checkCollisionWith(this.enemiesArray[j])) {
             this.bulletsArray.splice(i, 1);
             this.enemiesArray.splice(j, 1);
