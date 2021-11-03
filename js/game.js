@@ -2,6 +2,7 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const finalScore = document.getElementById("score");
 const finalHighestScore = document.getElementById("highest-score");
+
 canvas.width = 1000;
 canvas.height = 600;
 
@@ -390,6 +391,8 @@ window.onload = () => {
     start();
   };
 
+
+
   function start() {
     startPage.classList.add("hidden");
     canvas.classList.remove("hidden");
@@ -403,10 +406,15 @@ window.onload = () => {
 
     document.addEventListener("keydown", function (event) {
       if (event.code === "Space") {
-        if (game.jumpCount > 0 && game.jumpCount < 2) {
-          game.frog.jump();
-          game.jumpCount--;
-          jumpSound.play();
+        if (canvas.classList.contains("hidden")) {
+            gameSound.play();
+            start();
+        } else {
+            if (game.jumpCount > 0 && game.jumpCount < 2) {
+                game.frog.jump();
+                game.jumpCount--;
+                jumpSound.play();
+              }
         }
       }
 
@@ -414,6 +422,8 @@ window.onload = () => {
         game.frog.fire();
         game.frog.firing = true;
       }
+
+
     });
 
     document.addEventListener("keyup", function (event) {
