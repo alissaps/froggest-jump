@@ -2,10 +2,10 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const finalScore = document.getElementById("score");
 const finalHighestScore = document.getElementById("highest-score");
-let highestScore = 0;
-
 canvas.width = 1000;
 canvas.height = 600;
+
+let highestScore = 0;
 
 ////// IMAGES ///////
 // START PAGE
@@ -44,8 +44,9 @@ bulletImg.src = "./assets/images/block.png";
 
 ////// SOUNDS ///////
 const gameSound = new Audio();
-gameSound.src = "./assets/sounds/background-song.ogg";
-gameSound.volume = 0.1;
+gameSound.src = "./assets/sounds/background-sound.wav";
+gameSound.volume = 0.3;
+gameSound.loop = true;
 
 const jumpSound = new Audio();
 jumpSound.src = "./assets/sounds/jump.wav";
@@ -53,11 +54,11 @@ jumpSound.volume = 0.6;
 
 const chickenSound = new Audio();
 chickenSound.src = "./assets/sounds/chicken-sound.mp3";
-chickenSound.volume = 0.1;
+chickenSound.volume = 0.2;
 
-const loseSound = new Audio();
-loseSound.src = "./assets/sounds/loser.ogg";
-loseSound.volume = 0.3;
+const lostSound = new Audio();
+lostSound.src = "./assets/sounds/loser.ogg";
+lostSound.volume = 0.3;
 
 class Scenario {
   constructor(x1, x2, y, width, height, speedRate, sprite, game) {
@@ -70,7 +71,7 @@ class Scenario {
     this.sprite = sprite;
     this.game = game;
   }
-  // Condição para se o bg chegar na ponta esquerda, mover para a direita
+  // Condição do looping do BG
   update() {
     if (this.x1 <= -this.width + this.game.gameSpeed * this.speedRate) {
       this.x1 = this.width;
@@ -94,7 +95,7 @@ class Player {
   constructor(game) {
     this.x = 150;
     this.y = 200;
-    this.speedY = 0; // velocity y
+    this.speedY = 0;
     this.originalWidth = 800;
     this.originalHeight = 267;
     this.height = 64;
@@ -130,7 +131,6 @@ class Player {
 
   draw() {
     // Selecionando o Sprite verticalmente
-
     if (this.dying) {
       this.frameY = 3;
     } else if (this.firing) {
@@ -153,8 +153,6 @@ class Player {
 
   jump() {
     this.speedY = -20;
-    // this.speedY -= 20;
-    this.speedY = constrain(this.speedY, -20, 0); // Limitar a velocidade do salto
   }
 
   fire() {
@@ -225,7 +223,10 @@ class Bullet {
   }
 
   checkCollisionWith(currentObstacle) {
-    if (this.x < currentObstacle.x + currentObstacle.width && this.x + this.width > currentObstacle.x && this.y < currentObstacle.y + currentObstacle.height && this.y + this.height > currentObstacle.y) {
+    if (this.x < currentObstacle.x + currentObstacle.width &&
+        this.x + this.width > currentObstacle.x &&
+        this.y < currentObstacle.y + currentObstacle.height &&
+        this.y + this.height > currentObstacle.y) {
       return true;
     }
   }
@@ -233,11 +234,11 @@ class Bullet {
 
 class Game {
   constructor() {
-    this.gameFrame = 0; //frame count do animation loop.
+    this.gameFrame = 0;
     this.currentScore = 0;
     this.score = 0;
     this.highscore = 0;
-    this.gameSpeed = 5; // para criar o parallax effect
+    this.gameSpeed = 5;
     this.enemiesArray = [];
     this.bulletsArray = [];
     this.gravity = 1;
@@ -260,7 +261,7 @@ class Game {
   buildEnemies() {
     const newObstacle = new Enemy(canvas.width, canvas.height - 72 - this.groundHeight, 84, 84, 42, 42, obstacleSprite, 4, 15, 1, this, "obstacle");
     const newChicken = new Enemy(canvas.width, canvas.height - 68 - this.groundHeight, 64, 68, 32, 34, chickenSprite, 13, 4, 2, this, "chicken");
-    const newSaw = new Enemy(canvas.width + 150, canvas.height - randomSaw(240, 400) - this.groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3, this, "saw");
+    const newSaw = new Enemy(canvas.width + 150, canvas.height - randomSpawn(240, 400) - this.groundHeight, 64, 68, 38, 38, sawSprite, 8, 6, 3, this, "saw");
 
     let sawChance = 7;
 
@@ -340,24 +341,13 @@ class Game {
 
     finalScore.innerText = `SCORE: ${this.currentScore}`;
     finalHighestScore.innerText = `HIGHEST SCORE: ${highestScore}`
-
-    console.log("estou dentro do draw")
-    console.log(this.currentScore)
-
-  }
-
-  debug() {
-    ctx.font = "20px IBM Plex Mono";
-    ctx.fillStyle = "red";
-    if (this.bulletsArray[0] !== undefined) {
-      ctx.fillText(`Bullets: ${this.bulletsArray.length} Y: ${this.frog.y}`, 300, 40);
-    }
   }
 
   animate = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     this.buildScenario();
     this.buildEnemies();
+
     if (this.frog.grounded) {
       this.jumpCount = 1;
     }
@@ -365,14 +355,15 @@ class Game {
     this.frog.draw();
     this.updateBullets();
 
-    // this.debug();
     if (this.calculateCollisions()) {
         this.frog.dying = true;
         this.gameSpeed = 0;
-        loseSound.play();
+        lostSound.play();
         chickenSound.pause();
         chickenSound.currentTime = 0;
         setTimeout(() => {
+            gameSound.pause();
+            gameSound.currentTime = 0;
             this.gameOver();
         }, 600);
     } else {
@@ -380,7 +371,7 @@ class Game {
         this.drawScore();
     }
     this.gameFrame++;
-    this.animationLoop = requestAnimationFrame(this.animate); // Looping
+    this.animationLoop = requestAnimationFrame(this.animate);
   };
 }
 
@@ -390,11 +381,12 @@ window.onload = () => {
   gameOverPage.classList.add("hidden");
 
   document.querySelector(".start-btn").onclick = () => {
-    // gameSound.play();
+    gameSound.play();
     start();
   };
 
   document.querySelector(".over-btn").onclick = () => {
+    gameSound.play();
     start();
   };
 
@@ -432,16 +424,6 @@ window.onload = () => {
   }
 };
 
-function constrain(n, low, high) {
-  return Math.max(Math.min(n, high), low);
-}
-
-function randomSaw(min, max) {
-  return Math.round(Math.random() * (max - min) + min);
-  // return Math.floor(Math.random() * 3) + 1
-  // return Math.round(Math.random() * (max - min + 1)) + min;
-}
-
 function randomSpawn(min, max) {
-  return Math.round(Math.random() * (max - min + 1)) + min;
+  return Math.round(Math.random() * (max - min)) + min;
 }
