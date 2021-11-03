@@ -1,5 +1,8 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const finalScore = document.getElementById("score");
+const finalHighestScore = document.getElementById("highest-score");
+let highestScore = 0;
 
 canvas.width = 1000;
 canvas.height = 600;
@@ -244,6 +247,7 @@ class Game {
     this.bg = new Scenario(0, canvas.width, 0, canvas.width, canvas.height, 0.5, bgImage, this);
     this.frog = new Player(this);
     this.animationLoop;
+    this.gameOverAlreadyRun = false;
   }
 
   buildScenario() {
@@ -304,7 +308,7 @@ class Game {
   drawScore() {
     ctx.font = "20px IBM Plex Mono";
     ctx.fillStyle = "#1E1E1E";
-    ctx.fillText(`Score ${this.currentScore} / ${this.highscore}`, 15, 40);
+    ctx.fillText(`Score ${this.currentScore} / ${highestScore}`, 15, 40);
     this.currentScore++;
   }
 
@@ -319,13 +323,27 @@ class Game {
   }
 
   gameOver() {
-    if (this.currentScore > this.highscore) {
-      this.highscore = this.currentScore;
-    }
-    this.currentScore = 0;
-    gameOverPage.classList.remove("hidden");
-    canvas.classList.add("hidden");
-    cancelAnimationFrame(this.animationLoop);
+      if(!this.gameOverAlreadyRun) {
+          this.gameOverAlreadyRun = true;
+        if (this.currentScore > highestScore) {
+            highestScore = this.currentScore;
+          }
+          this.drawFinalScore();
+          gameOverPage.classList.remove("hidden");
+          canvas.classList.add("hidden");
+          cancelAnimationFrame(this.animationLoop);
+          this.currentScore = 0;
+      }
+  }
+
+  drawFinalScore() {
+
+    finalScore.innerText = `SCORE: ${this.currentScore}`;
+    finalHighestScore.innerText = `HIGHEST SCORE: ${highestScore}`
+
+    console.log("estou dentro do draw")
+    console.log(this.currentScore)
+
   }
 
   debug() {
@@ -348,18 +366,18 @@ class Game {
     this.updateBullets();
 
     // this.debug();
-    this.drawScore();
     if (this.calculateCollisions()) {
-      this.frog.dying = true;
-      this.gameSpeed = 0;
-      loseSound.play();
-      chickenSound.pause();
-      chickenSound.currentTime = 0;
-      setTimeout(() => {
-        this.gameOver();
-      }, 600);
+        this.frog.dying = true;
+        this.gameSpeed = 0;
+        loseSound.play();
+        chickenSound.pause();
+        chickenSound.currentTime = 0;
+        setTimeout(() => {
+            this.gameOver();
+        }, 600);
     } else {
-      this.frog.dying = false;
+        this.frog.dying = false;
+        this.drawScore();
     }
     this.gameFrame++;
     this.animationLoop = requestAnimationFrame(this.animate); // Looping
