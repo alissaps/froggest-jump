@@ -5,7 +5,6 @@
 Froggest Jump is a game built using HTML, CSS, and JavaScript. It was made as the first project of Ironhack's Bootcamp of Web Development.
 
 > Click [HERE](https://alissaps.github.io/froggest-jump/) to play
-> Click [HERE] (https://docs.google.com/presentation/d/19h4uCkxUc02pNPz-1z_TSTmLDhIAZzJXEGV6zTnvOm4/edit?usp=sharing) to see the presentation.
 
 # About the game
 Froggest Jump is inspired by endless runner games with a Super Mario World vibe. You only have to jump the obstacles and shoot the enemies to stay alive and make as many points as you can. It's that simple - is it? ;)
@@ -15,3 +14,5 @@ Froggest Jump is inspired by endless runner games with a Super Mario World vibe.
 ## Instructions
 - **Jump:** Spacebar
 - **Shoot:** M (after a shoot, you can only shoot again after 2 seconds)
+
+> Click [HERE](https://docs.google.com/presentation/d/19h4uCkxUc02pNPz-1z_TSTmLDhIAZzJXEGV6zTnvOm4/edit#slide=id.gfd87b396fa_0_32) to see the presentation.
