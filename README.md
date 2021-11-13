@@ -16,5 +16,3 @@ Froggest Jump is inspired by endless runner games with a Super Mario World vibe.
 ## Instructions
 - **Jump:** Spacebar
 - **Shoot:** M (after a shoot, you can only shoot again after 2 seconds)
-
-> Click [HERE](https://docs.google.com/presentation/d/19h4uCkxUc02pNPz-1z_TSTmLDhIAZzJXEGV6zTnvOm4/edit#slide=id.gfd87b396fa_0_32) to see the presentation.
